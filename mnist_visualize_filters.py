@@ -1,13 +1,16 @@
+"""
+visualize filters
+"""
 import os
 import keras
 import matplotlib.pyplot as plt
 
-from mnist_layers import EncodeModel
+from mnist_layers import LinearEncodeModel
 
 weights_enc = "weights_enc.hdf5"
 
 # encoder
-model_enc = EncodeModel()
+model_enc = LinearEncodeModel()
 if os.path.exists(weights_enc):
     model_enc.load_weights(weights_enc)
 

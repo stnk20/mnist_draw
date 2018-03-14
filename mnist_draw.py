@@ -3,7 +3,6 @@ import sys
 import keras
 from keras.datasets import mnist
 from keras.models import Model, Input 
-from keras.optimizers import RMSprop
 
 from mnist_layers import DrawImageLayer,LinearEncodeModel,LSTMDecodeModel
 
@@ -47,7 +46,7 @@ if os.path.exists(weights_dec):
     model_dec.load_weights(weights_dec)
 
 if train:
-    model.compile(loss='mse',optimizer=RMSprop(0.0015))
+    model.compile(loss='mse',optimizer=keras.optimizers.Nadam())
     history = model.fit(x_train, x_train,
                         batch_size=batch_size,
                         epochs=epochs,
@@ -57,47 +56,89 @@ if train:
     model_enc.save_weights(weights_enc)
     model_dec.save_weights(weights_dec)
 
-# # export to png file with matplotlib
+
+## display with opencv
+
+# import cv2
+# for i in range(100):
+#     img0 = x_test[i]
+#     img1 = model.predict(img0.reshape((1,28,28,1)))[0]
+    
+#     if len(img1.shape)==4:
+#         for j in range(img1.shape[0]):
+
+#             cv2.imshow("gt",img0)
+#             cv2.imshow("predict",img1[j])
+#             cv2.waitKey(15)
+#         cv2.imshow("gt",img0)
+#         cv2.imshow("predict",img1[-1])
+#         k = cv2.waitKey()
+#         if k==27:
+#             break
+
+#     else:
+#         cv2.imshow("gt",img0)
+#         cv2.imshow("predict",img1)
+#         k = cv2.waitKey()
+#         if k==27:
+#             break
+
+
+## export to png file with matplotlib
+## generate gif animation : convert -layers optimize -loop 0 -delay 15 draw*.png sequence.gif
+
 # import matplotlib.pyplot as plt
 
-# img0 = x_test[:100]
+# n = 8
+# img0 = x_test[:n**2]
 # img1 = model.predict(img0.reshape((-1,28,28,1)))
-
-# for i in range(100):
-#     plt.subplot(10,10,i+1)
+# for i in range(n**2):
+#     plt.subplot(n,n,i+1)
 #     plt.tick_params(labelbottom="off",bottom="off",labelleft="off",left="off")
 #     plt.imshow(img0[i,:,:,0], 'gray', vmin=0, vmax=1)
-# plt.savefig("true.png")
+# plt.savefig("target.png")
 
 # for j in range(steps):
-#     for i in range(100):
-#         plt.subplot(10,10,i+1)
+#     for i in range(n**2):
+#         plt.subplot(n,n,i+1)
 #         plt.tick_params(labelbottom="off",bottom="off",labelleft="off",left="off")
 #         plt.imshow(img1[i,j,:,:,0], 'gray', vmin=0, vmax=1)
-#     plt.savefig("draw{:0>2}.png".format(j))
+#     plt.savefig("draw{:0>3}.png".format(j))
 
 
-# display with opencv
-import cv2
-for i in range(100):
-    img0 = x_test[i]
-    img1 = model.predict(img0.reshape((1,28,28,1)))[0]
-    
-    if len(img1.shape)==4:
-        for j in range(img1.shape[0]):
+## interpolation experiment
 
-            cv2.imshow("gt",img0)
-            cv2.imshow("predict",img1[j])
-            cv2.waitKey(15)
-        cv2.imshow("gt",img0)
-        cv2.imshow("predict",img1[-1])
-        k = cv2.waitKey()
-        if k==27:
-            break
+# import cv2
+# import matplotlib.pyplot as plt
+# import numpy as np
 
-    else:
-        cv2.imshow("gt",img0)
-        cv2.imshow("predict",img1)
-        k = cv2.waitKey()
-        if k==27:
-            break
+# a = 0
+# for i in range(20):
+#     b = a
+#     a = np.random.randint(10000)
+#     for t in range(15):
+#         r = t/15
+#         img0 = r*x_test[a] + (1-r)*x_test[b] # same as interpolation on the encoded domain, because of the "linear" encoding
+#         img1 = model.predict(img0.reshape((1,28,28,1)))[0,-1]
+
+#         # disp        
+#         # cv2.imshow("gt",img0)
+#         # cv2.imshow("predict",img1)
+#         # k = cv2.waitKey(30)
+
+#         # write to file
+#         # generate gif animation : convert -layers optimize -loop 0 -delay 15 interpolation*.png interpolation.gif
+#         frame = i*15+t
+
+#         plt.subplot(1,2,1)
+#         plt.tick_params(labelbottom="off",bottom="off",labelleft="off",left="off")
+#         plt.imshow(img0[:,:,0], 'gray', vmin=0, vmax=1)
+#         plt.subplot(1,2,2)
+#         plt.tick_params(labelbottom="off",bottom="off",labelleft="off",left="off")
+#         plt.imshow(img1[:,:,0], 'gray', vmin=0, vmax=1)
+#         plt.savefig("interpolation{:0>3}.png".format(frame))
+
+#     k = cv2.waitKey(0)
+#     if k==27:
+#         break
+
